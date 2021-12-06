@@ -118,7 +118,7 @@ fn twelve_days_of_christmas(n: usize) -> () {
 
     for number in 0..n {
         println!("On the {} day of christmas \nMy good friends brought to me", numbers[number]);
-        for verse in (0..(n)).rev() {
+        for verse in (0..=(number)).rev() {
             println!("{}",days[verse]);
         }
         println!("\n");
