@@ -24,6 +24,11 @@ fn main() {
     let s2 = "Pizza";
     println!("{:?}", parse_add(s1));
     println!("{:?}", parse_add(s2));
+    
+    let mut map: HashMap<String, String> = HashMap::new();
+    map.insert(String::from("Sally"), String::from("Engineering"));
+    let parse = parse_get("Engineering", &map);
+    println!("{:?}", parse);
 
     add_to_company_interface();
 }
@@ -96,9 +101,9 @@ fn pig_latinize(str: &str) -> String {
     match first_char {
         Some(char) => 
             if is_vowel(&char) {
-                format!("{}{}", str, "-hay") 
+                format!("{}{}", str, "hay") 
             } else {
-                format!("{}{}{}{}", &str[1..], "-", char, "ay")
+                format!("{}{}{}", &str[1..], char, "ay")
             },
         None => String::from("") 
     }
@@ -116,21 +121,29 @@ fn add_to_company_interface() {
     let mut company_map: HashMap<String, String> = HashMap::new();
 
     loop {
-        println!("Please input a request of the form: 'Add <name> to <department>'");
+        println!("Input a request. It can be of the form: ");
+        println!("'Add <name> to <department>' or 'Get <department>'\n");
         let mut request = String::new();
 
         io::stdin()
             .read_line(&mut request)
             .expect("Failed to read line");
 
-        match parse_add(&request) {
-            Some((n,d)) => {
-                company_map.entry(String::from(n)).or_insert(String::from(d));
-                println!("{} was added to {}", n, d);
-            },
-            None => {
+            match parse_get(&request, &company_map) {
+                Some(v) => println!("{:?}", v),
+                None => { 
+                    match parse_add(&request) {
+                        Some((n,d)) => {
+                            company_map.entry(String::from(n)).or_insert(String::from(d));
+                            println!("{} was added to {}", n, d);
+                        },
+                        None => {
+                            println!("Incorrect format. Try using format:");
+                            println!("'Add Sally to Engineering' or 'Get Engineering'")
+                        }
+                    }
+                }
             }
-        }
     }
 }
 
@@ -138,9 +151,10 @@ fn add_to_company_interface() {
 // returns a tuple of Some(name, department) or None
 fn parse_add(str: &str) -> Option<(&str, &str)>{
     let str_args: Vec<&str> = str.split_whitespace()
-                                 .filter(|&s| !s.eq("Add") && !s.eq("to")) // Remove argument keyword
+                                 .filter(|&s| !s.to_ascii_lowercase().eq("add") && 
+                                              !s.to_ascii_lowercase().eq("to")) // Remove argument keyword
                                  .collect();
-    if str_args.len() == 2{
+    if str_args.len() == 2 && str.split_whitespace().count() == 4{ // argument number requirements
         match (str_args.get(0), str_args.get(1)) {
             (Some(n), Some (d)) => Some((n,d)),
             _ => None 
@@ -152,9 +166,9 @@ fn parse_add(str: &str) -> Option<(&str, &str)>{
 
 // Given a string of the form "Get <department>"
 // returns Some(Vec<&str>) containing employees or None
-fn parse_get(str: &str, map: &HashMap<&str, &str>) -> Option<Vec<String>> {
+fn parse_get(str: &str, map: &HashMap<String, String>) -> Option<Vec<String>> {
     let str_args: Vec<&str> = str.split_whitespace()
-                                 .filter(|&s| !s.eq("Get")) // Remove argument keyword
+                                 .filter(|&s| !s.to_ascii_lowercase().eq("get")) // Remove argument keyword
                                  .collect();
 
     if str_args.len() != 1 {
@@ -165,7 +179,7 @@ fn parse_get(str: &str, map: &HashMap<&str, &str>) -> Option<Vec<String>> {
                 let mut employees: Vec<String> = Vec::new();
                 for (k,v) in map.iter() {
                     if v == d {
-                        employees.push(String::from(*k));
+                        employees.push(k.clone());
                     } 
                 }
                 employees.sort();
