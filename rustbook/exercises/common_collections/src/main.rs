@@ -1,16 +1,31 @@
 use std::collections::HashMap;
+use std::io;
 
 fn main() {
     let list = vec![2,3,4,4,3,1,5,6,2];
 
-    let median = median(&list);
-    println!("The median of {:?} is {}", list, median);
+     let median = median(&list);
+     println!("The median of {:?} is {}", list, median);
 
-    let mode = mode(&list);
-    println!("The mode of {:?} is {}", list, mode);
-    
-    let median_mode = median_mode(&list);
-    println!("The median and mode of {:?} is {:?}", list, median_mode);
+     let mode = mode(&list);
+     println!("The mode of {:?} is {}", list, mode);
+  
+     let median_mode = median_mode(&list);
+     println!("The median and mode of {:?} is {:?}", list, median_mode);
+
+    let s1 = "first";
+    let s2 = "apple";
+    let s3 = "if apples can be oranges";
+    println!("Pig latin of \"{}\" is \"{}\"", s1, to_pig_latin(s1));
+    println!("Pig latin of \"{}\" is \"{}\"", s2, to_pig_latin(s2));
+    println!("Pig latin of \"{}\" is \"{}\"", s3, to_pig_latin(s3));
+
+    let s1 = "Add Sally to Engineering";
+    let s2 = "Pizza";
+    println!("{:?}", parse_add(s1));
+    println!("{:?}", parse_add(s2));
+
+    add_to_company_interface();
 }
 
 // Given a list of integers returns the median and
@@ -50,4 +65,113 @@ fn mode(list: &Vec<i32>) -> i32 {
         }
     }
     highest_key
+}
+
+// Given a string, return the string converted to pig latin.
+// Pig latin:
+// - The first consonant of each word is moved to the end 
+// of the word is moved to the end of the word and "ay" ias added,
+// so "first" becomes "irst-fay".
+//
+// - Words that start with a vowel have "hay" added to the end instead
+// ("apple" becomes "apple-hay")
+fn to_pig_latin(str: &str) -> String {
+    let mut pig_latin = String::new();
+
+    for s in str.split_whitespace() {
+        let pig_str = pig_latinize(s);
+        pig_latin.push_str(&pig_str); 
+        pig_latin.push_str(" ");
+    }
+
+    pig_latin
+}
+
+// Given a string, return the pig latin of the based on the 
+// first character of the string.
+// NOTE: works only as intended on single word strings
+fn pig_latinize(str: &str) -> String {
+    let first_char = str.chars().nth(0);
+
+    match first_char {
+        Some(char) => 
+            if is_vowel(&char) {
+                format!("{}{}", str, "-hay") 
+            } else {
+                format!("{}{}{}{}", &str[1..], "-", char, "ay")
+            },
+        None => String::from("") 
+    }
+}
+
+fn is_vowel(c: &char) -> bool {
+    const VOWELS: [char; 6] = ['a','e','i','o','u','y'];  
+    
+    let lower_c = c.to_ascii_lowercase();
+    VOWELS.contains(&lower_c)
+}
+
+// Using a hash map and vectors, create a text interface to allow a user to add employee names to a department in a company. For example, “Add Sally to Engineering” or “Add Amir to Sales.” Then let the user retrieve a list of all people in a department or all people in the company by department, sorted alphabetically.
+fn add_to_company_interface() {
+    let mut company_map: HashMap<String, String> = HashMap::new();
+
+    loop {
+        println!("Please input a request of the form: 'Add <name> to <department>'");
+        let mut request = String::new();
+
+        io::stdin()
+            .read_line(&mut request)
+            .expect("Failed to read line");
+
+        match parse_add(&request) {
+            Some((n,d)) => {
+                company_map.entry(String::from(n)).or_insert(String::from(d));
+                println!("{} was added to {}", n, d);
+            },
+            None => {
+            }
+        }
+    }
+}
+
+// Given a string of the form "Add <name> to <department>" 
+// returns a tuple of Some(name, department) or None
+fn parse_add(str: &str) -> Option<(&str, &str)>{
+    let str_args: Vec<&str> = str.split_whitespace()
+                                 .filter(|&s| !s.eq("Add") && !s.eq("to")) // Remove argument keyword
+                                 .collect();
+    if str_args.len() == 2{
+        match (str_args.get(0), str_args.get(1)) {
+            (Some(n), Some (d)) => Some((n,d)),
+            _ => None 
+        }
+    } else {
+        None
+    }
+}
+
+// Given a string of the form "Get <department>"
+// returns Some(Vec<&str>) containing employees or None
+fn parse_get(str: &str, map: &HashMap<&str, &str>) -> Option<Vec<String>> {
+    let str_args: Vec<&str> = str.split_whitespace()
+                                 .filter(|&s| !s.eq("Get")) // Remove argument keyword
+                                 .collect();
+
+    if str_args.len() != 1 {
+        None
+    } else {
+        match str_args.get(0) {
+            Some(d) => {
+                let mut employees: Vec<String> = Vec::new();
+                for (k,v) in map.iter() {
+                    if v == d {
+                        employees.push(String::from(*k));
+                    } 
+                }
+                employees.sort();
+                Some(employees)
+            },
+            None => None
+        }
+    }
 }
