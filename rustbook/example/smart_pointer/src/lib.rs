@@ -1,3 +1,5 @@
+mod mock_objects;
+
 pub mod cons {
     use::std::rc::Rc;
 
