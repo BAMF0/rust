@@ -1,4 +1,7 @@
 mod mock_objects;
+pub mod ref_cycle;
+
+pub use ref_cycle::node;
 
 pub mod cons {
     use::std::rc::Rc;

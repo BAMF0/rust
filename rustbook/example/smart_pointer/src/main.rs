@@ -1,10 +1,9 @@
-
-
 use smart_pointer::cons::List::{Cons, Nil};
 use smart_pointer::deref::MyBox;
 use smart_pointer::drop::CustomSmartPointer;
+use smart_pointer::node::Node;
 use crate::RefList::{Consr, Nilr};
-use std::rc::Rc;
+use std::rc::{ Rc, Weak };
 use std::cell::RefCell;
 
 #[derive(Debug)]
@@ -15,10 +14,16 @@ enum RefList {
 
 
 fn main() {
+    // custom cons list
     list_main();
+    // custom pointer 
     custom_pointer_main();
+    // reference counter
     rc_main();
+    // reference counter with interior mutability
     rc_and_refcell_main();
+    // weak references to avoid reference cycles
+    node_main();
 }
 
 fn list_main() {
@@ -73,4 +78,24 @@ fn rc_and_refcell_main() {
     print!("a after = {:?}", a);
     print!("b after = {:?}", b);
     print!("c after = {:?}", c);
+}
+
+fn node_main() {
+    let leaf = Rc::new(Node {
+        value: 3,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![]),
+    }); 
+
+    println!("leaf parent = {:?}", leaf.parent.borrow().upgrade());
+    
+    let branch = Rc::new(Node {
+        value: 5,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![Rc::clone(&leaf)]),
+    });
+
+    *leaf.parent.borrow_mut() = Rc::downgrade(&branch);
+
+    println!("leaf parent = {:?}", leaf.parent.borrow().upgrade());
 }
