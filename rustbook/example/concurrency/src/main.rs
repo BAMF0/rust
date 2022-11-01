@@ -6,7 +6,7 @@ fn main() {
     //new_thread();    
     //move_value();
     //send_hi_from_thread();
-    send_multiple_from_thread();
+    send_multiple_from_thread();    
 }
 
 // Creating a new thread to print one thing while the main thread
