@@ -2,5 +2,6 @@
 
 members = [
 	"smart_pointer",
-	"concurrency"
+	"concurrency",
+	"patterns"
 ]
