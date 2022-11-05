@@ -3,5 +3,7 @@
 members = [
 	"smart_pointer",
 	"concurrency",
-	"patterns"
+	"patterns",
+	"unsafe_rust",
+	"advanced_traits",
 ]
