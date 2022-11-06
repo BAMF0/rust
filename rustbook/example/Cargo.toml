@@ -6,4 +6,5 @@ members = [
 	"patterns",
 	"unsafe_rust",
 	"advanced_traits",
+	"macros",
 ]
