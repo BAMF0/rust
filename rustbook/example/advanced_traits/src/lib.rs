@@ -1,19 +1,13 @@
 use std::ops::Add;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-struct Point {
-    x: i32,
-    y: i32,
-}
+struct Millimeters(u32);
+struct Meters(u32);
 
-impl Add for Point {
-   type Output = Point; 
+impl Add<Meters> for Millimeters {
+   type Output = Millimeters; 
 
-   fn add(self, other: Point) -> Point {
-        Point { 
-           x: self.x + other.x,
-           y: self.y + other.y,
-        }
+   fn add(self, other: Meters) -> Self::Output {
+       Millimeters(self.0 + (other.0 * 1000))
    }
 }
 
