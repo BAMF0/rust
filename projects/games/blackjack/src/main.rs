@@ -1,3 +1,8 @@
+use blackjack::Deck;
+
 fn main() {
-    println!("Hello, world!");
+    let mut deck = Deck::new();
+    println!("{deck}");
+    deck.shuffle();
+    println!("{deck}");
 }
