@@ -1,2 +1,2 @@
-mod cards;
+pub mod cards;
 pub mod logic;

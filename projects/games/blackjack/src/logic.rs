@@ -27,13 +27,19 @@ impl Hand {
     fn eval(&self) -> usize {
         let mut sum = 0;
         for c in &self.cards {
-            if !(c.rank == Ace && sum > 10) {
-                sum += c.eval();
-            } else {
-                sum += 1;
-            }
+            sum += c.eval();
+        }
+        if sum > 21 && self.has_ace() {
+            sum -= 10
         }
         sum
+    }
+
+    fn has_ace(&self) -> bool {
+        match self.cards.iter().find(|c| c.rank == Ace) {
+            Some(_) => true,
+            None => false,
+        }
     }
 
     fn new(card: Card) -> Hand {
@@ -55,7 +61,7 @@ impl Display for Hand {
     }
 }
 
-struct Player {
+pub struct Player {
     name: String,
     hand: Hand,
     marks: usize,
@@ -64,7 +70,7 @@ struct Player {
 
 impl Player {
     fn bet(&mut self, bet: usize) {
-        assert!(bet <= self.marks, "bet must not exceed player's marks");
+        assert!(bet <= self.marks, "Bet must not exceed player's marks!");
         self.marks -= bet;
         self.wager += bet;
     }
@@ -83,11 +89,6 @@ impl Player {
             marks,
             wager: 0,
         }
-    }
-
-    fn surrender(&mut self) {
-        self.marks += self.wager / 2;
-        self.wager = 0;
     }
 }
 

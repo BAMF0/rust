@@ -1,8 +1,3 @@
-use blackjack::Deck;
+use blackjack::logic::Player;
 
-fn main() {
-    let mut deck = Deck::new();
-    println!("{deck}");
-    deck.shuffle();
-    println!("{deck}");
-}
+fn main() {}
