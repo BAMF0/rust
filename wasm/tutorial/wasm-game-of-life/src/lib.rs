@@ -65,9 +65,20 @@ impl Universe {
     }
 }
 
+extern crate web_sys;
+
+// A macro to provide `println!(...)`-style syntax for `console.log` logging.
+macro_rules! log {
+    ($( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 #[wasm_bindgen]
 impl Universe {
     pub fn new() -> Universe {
+        utils::set_panic_hook();
+
         let width = 64;
         let height = 64;
 
@@ -99,6 +110,14 @@ impl Universe {
                 let cell = self.cells[idx];
                 let live_neighbours = self.live_neighbour_count(row, col);
 
+                log!(
+                    "cell[{}, {}] is initially {:?} and has {} live neighbours",
+                    row,
+                    col,
+                    cell,
+                    live_neighbours
+                );
+
                 next.set(
                     idx,
                     match (cell, live_neighbours) {
@@ -118,6 +137,8 @@ impl Universe {
                         (otherwise, _) => otherwise,
                     },
                 );
+
+                log!("      it becomes {:?}", next[idx]);
             }
         }
 
@@ -153,6 +174,12 @@ impl Universe {
         let size = (self.width * self.height) as usize;
         self.cells = FixedBitSet::with_capacity(size);
     }
+
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        let current = self.cells[idx];
+        self.cells.set(idx, !current); 
+    }
 }
 
 use std::fmt;
@@ -170,3 +197,4 @@ impl fmt::Display for Universe {
         Ok(())
     }
 }
+
