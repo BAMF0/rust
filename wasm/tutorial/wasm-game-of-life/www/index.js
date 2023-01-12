@@ -8,7 +8,7 @@ const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
 // Construct the universe, and get its width and height.
-const universe = Universe.new();
+let universe = Universe.new();
 const width = universe.width();
 const height = universe.height();
 
@@ -105,7 +105,7 @@ const pause = () => {
     animationId = null;
 };
 
-playPauseButton.addEventListener("click", event => {
+playPauseButton.addEventListener("click", _ => {
     if (isPaused()) {
         play();
     } else {
@@ -116,7 +116,7 @@ playPauseButton.addEventListener("click", event => {
 canvas.addEventListener("click", event => {
     const boundingRect = canvas.getBoundingClientRect();
 
-    const scaleX = canvas.width  / boundingRect.width;
+    const scaleX = canvas.width / boundingRect.width;
     const scaleY = canvas.height / boundingRect.height;
 
     const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
@@ -132,7 +132,20 @@ canvas.addEventListener("click", event => {
     drawCells();
 });
 
+const resetButton = document.getElementById("reset");
+resetButton.textContent = "Reset";
+
+const reset = () => {
+    universe = Universe.new();
+};
+
+resetButton.addEventListener("click", _ => {
+    reset();
+});
+
+
+
+
 drawGrid();
 drawCells();
 play();
-
