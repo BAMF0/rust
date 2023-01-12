@@ -1,6 +1,3 @@
 [submodule "rustlings"]
 	path = rustlings
 	url = git@github.com:BAMF0/rustlings.git
-[submodule "projects/RUUM"]
-	path = projects/RUUM
-	url = git@github.com:BAMF0/RUUM.git
