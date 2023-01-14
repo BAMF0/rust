@@ -2,18 +2,82 @@ mod utils;
 
 use wasm_bindgen::prelude::*;
 
+extern crate web_sys;
+use web_sys::console;
+
+// A macro to provide `println!(...)`-style syntax for `console.log` logging.
+macro_rules! log {
+    ($( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 extern crate fixedbitset;
-use fixedbitset::FixedBitSet;
-
 extern crate js_sys;
+use fixedbitset::FixedBitSet;
+use std::sync::{Mutex, MutexGuard};
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static UNIVERSE: Environment = Environment(Mutex::new(Universe {
+    width: 64,
+    height: 64,
+    cells: FixedBitSet::new(),
+}));
 
 #[wasm_bindgen]
+pub struct Environment(Mutex<Universe>);
+
+impl Environment {
+    pub fn take_universe() -> MutexGuard<'static, Universe> {
+        UNIVERSE.0.lock().unwrap()
+    }
+    pub fn get_index(row: u32, column: u32) -> usize {
+        Environment::take_universe().get_index(row, column)
+    }
+    pub fn get_cells() -> Vec<u32> {
+        Environment::take_universe().get_cells().to_owned()
+    }
+    pub fn set_cells(cells: &[(u32, u32)]) {
+        Environment::take_universe().set_cells(cells);
+    }
+    pub fn set_width(width: u32) {
+        Environment::take_universe().set_width(width);
+    }
+    pub fn set_height(height: u32) {
+        Environment::take_universe().set_height(height);
+    }
+}
+
+#[wasm_bindgen]
+impl Environment {
+    pub fn build_universe() {
+        let size = (Environment::width() * Environment::height()) as usize;
+        let mut cells = FixedBitSet::with_capacity(size);
+        // 50 % chance of cell being alive on start
+        for i in 0..size {
+            cells.set(i, js_sys::Math::random() < 0.5);
+        }
+        Environment::take_universe().cells = cells;
+    }
+
+    pub fn tick() {
+        Environment::take_universe().tick();
+    }
+
+    pub fn width() -> u32 {
+        Environment::take_universe().width()
+    }
+    pub fn height() -> u32 {
+        Environment::take_universe().height()
+    }
+
+    pub fn toggle_cell(row: u32, column: u32) {
+        Environment::take_universe().toggle_cell(row, column)
+    }
+    pub fn cells() -> *const u32 {
+        Environment::take_universe().cells()
+    }
+}
+
 pub struct Universe {
     width: u32,
     height: u32,
@@ -23,6 +87,11 @@ pub struct Universe {
 impl Universe {
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
+    }
+
+    fn get_row_col(&self, idx: usize) -> (u32, u32) {
+        let row = idx as u32 / self.width;
+        (row, idx as u32 - row)
     }
 
     fn live_neighbour_count(&self, row: u32, column: u32) -> u8 {
@@ -83,20 +152,7 @@ impl Universe {
             self.cells.set(idx, true);
         }
     }
-}
 
-extern crate web_sys;
-use web_sys::console;
-
-// A macro to provide `println!(...)`-style syntax for `console.log` logging.
-macro_rules! log {
-    ($( $t:tt )* ) => {
-        web_sys::console::log_1(&format!( $( $t )* ).into());
-    }
-}
-
-#[wasm_bindgen]
-impl Universe {
     pub fn new() -> Universe {
         utils::set_panic_hook();
 

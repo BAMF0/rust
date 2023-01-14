@@ -1,6 +1,6 @@
-import { Universe, Cell } from "wasm-game-of-life";
+import { Environment } from "wasm-game-of-life";
 // Import the WebAssembly memory at the top of the file.
-import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
+import { memory } from "wasm-game-of-life/wasm_game_of_life_bamf0_bg";
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = "#CCCCCC";
@@ -8,9 +8,9 @@ const DEAD_COLOR = "#FFFFFF";
 const ALIVE_COLOR = "#000000";
 
 // Construct the universe, and get its width and height.
-let universe = Universe.new();
-const width = universe.width();
-const height = universe.height();
+Environment.build_universe();
+const width = Environment.width();
+const height = Environment.height();
 
 // Give the canvas room for all of our cells and a 1px border
 // around each of them.
@@ -27,7 +27,7 @@ const renderLoop = () => {
     fps.render();
 
     for (let i = 0; i < 9; i++) {
-        universe.tick();
+        Environment.tick();
     }
 
     drawGrid();
@@ -67,7 +67,7 @@ const bitIsSet = (n, arr) => {
 };
 
 const drawCells = () => {
-    const cellsPtr = universe.cells();
+    const cellsPtr = Environment.cells();
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height / 8);
 
     ctx.beginPath();
@@ -90,7 +90,7 @@ const drawCells = () => {
         }
     }
 
-    // Dead cells 
+    // Dead cells. 
     ctx.fillStyle = DEAD_COLOR;
     for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
@@ -148,7 +148,7 @@ canvas.addEventListener("click", event => {
     const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
     const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
 
-    universe.toggle_cell(row, col);
+    Environment.toggle_cell(row, col);
 
     drawGrid();
     drawCells();
@@ -158,7 +158,7 @@ const resetButton = document.getElementById("reset");
 resetButton.textContent = "Reset";
 
 const reset = () => {
-    universe = Universe.new();
+    Environment.build_universe();
 };
 
 resetButton.addEventListener("click", _ => {
