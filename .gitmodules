@@ -1,3 +1,6 @@
 [submodule "rustlings"]
 	path = rustlings
 	url = git@github.com:BAMF0/rustlings.git
+[submodule "wasm/wasm-visual-sorting"]
+	path = wasm/wasm-visual-sorting
+	url = git@github.com:BAMF0/wasm-visual-sorting.git
